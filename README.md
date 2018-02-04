@@ -14,7 +14,7 @@ python3 language-pack-ja chromium-browser fonts-ipafont-gothic fonts-ipafont-min
 pip3 install lxml beautifulsoup4 selenium retry python-dateutil pytz
 
 #### 参考
-"""
+```
 sudo apt update
 sudo apt -y upgrade
 sudo apt install -y python3-pip language-pack-ja chromium-browser fonts-ipafont-gothic fonts-ipafont-mincho chromium-chromedriver
@@ -27,7 +27,7 @@ format = columns
 EOF
 pip3 list -o | awk 'NR>2{print $1}' | sudo -H xargs pip3 install --upgrade
 sudo -H pip3 install lxml beautifulsoup4 selenium retry python-dateutil pytz
-"""
+```
 
 ### 設定
 設定ファイルを JSON 形式で記述し、コマンドライン引数としてそのファイル名を渡します。
@@ -40,7 +40,7 @@ post_journal_for_comment.py [設定ファイル名]...
 設定ファイル名に、「-」を指定すると、標準入力から JSON 形式の設定を読み込みます。
 
 ### 実行例
-"""
+```
 $ cat ../config.json
 {
     "user_id": "sadakenbot",
@@ -49,7 +49,7 @@ $ cat ../config.json
     "take_screenshot": true
 }
 $ ./post_journal_for_comment.py ../config.json
-"""
+```
 
 ## ライセンス
 [MIT LICENSE](https://opensource.org/licenses/mit-license.php)
