@@ -117,9 +117,9 @@ def do_take_screenshot(driver, tag = "TAG"):
 
 def get_rss_soup(url, proxy_list):
     for proxy in proxy_list:
-        print("### TRYING PROXY: {0}".format(proxy))
+        print("### TRYING TO GET {0} VIA PROXY: {1}".format(url, proxy))
         try:
-            rss = requests.get(url, proxies = {"http": proxy})
+            rss = requests.get(url, proxies = {"http": proxy, "https": proxy})
             print("##### OK")
             return BeautifulSoup(rss.content, "lxml")
 
@@ -142,19 +142,26 @@ def scroll_to_and_click(driver, css_selector):
 print("# GET PROXY LIST")
 proxy_list = get_proxy_list_from_cybersyndrome_net(timeout = page_load_timeout)
 print("# NUMBER OF PROXIES: {0}".format(len(proxy_list)))
+if len(proxy_list) < 1:
+    raise RunTimeError("No proxy found.")
 
 
 print("# USER RSS")
 user_soup = get_rss_soup("https://srad.jp/~{0}/journal/rss".format(user_id), proxy_list)
 
 
+REGEX_TEXT_HEADER = re.compile(r"^\s*(?P<TIME>.*?)、{0}は".format(target_id))
 for item in user_soup.find_all("item"):
-    match = re.search(r"^\s*(?P<TIME>.*?)、", item.find("description").text)
+    match = REGEX_TEXT_HEADER.search(item.find("description").text)
     if bool(match):
-        item_time = dateutil.parser.parse(match.group("TIME"))
+        try:
+            item_time = dateutil.parser.parse(match.group("TIME"))
+        except ValueError:
+            continue
         if time_after < item_time:
             time_after = item_time
-        break
+            break
+
 print("### TARGET ITEMS AFTER {0} WILL BE REPOSTED".format(time_after))
 
 
@@ -175,6 +182,10 @@ for item in target_soup.find_all("item"):
         post_item_list.append(item_hash)
     else:
         break
+
+if len(post_item_list) < 1:
+    print("# NO TARGET ITEM; EXIT")
+    exit()
 
 if max_post > 0 and len(post_item_list) > max_post:
     print("# LIMIT TARGET ITEMS: {0} -> {1}".format(len(post_item_list), max_post))
