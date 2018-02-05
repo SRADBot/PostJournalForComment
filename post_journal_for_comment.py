@@ -118,7 +118,8 @@ def do_take_screenshot(driver, tag = "TAG"):
 
 
 def get_rss_soup(url, proxy_list):
-    for proxy in proxy_list:
+    while proxy_list != []:
+        proxy = proxy_list[0]
         print("### TRYING TO GET {0} VIA PROXY: {1}".format(url, proxy))
         try:
             rss = requests.get(url, proxies = {"http": proxy, "https": proxy})
@@ -127,6 +128,7 @@ def get_rss_soup(url, proxy_list):
 
         except:
             print("##### TIMEOUT")
+            proxy_list.pop(0)
 
 
 JAVASCRIPT_SCROLL_TO_ELEMENT_BY_CSS_SELECTOR = """
@@ -150,7 +152,6 @@ if len(proxy_list) < 1:
 
 print("# USER RSS")
 user_soup = get_rss_soup("https://srad.jp/~{0}/journal/rss".format(user_id), proxy_list)
-
 
 REGEX_TEXT_HEADER = re.compile(r"^\s*(?P<TIME>.*?)、{0}は".format(target_id))
 for item in user_soup.find_all("item"):
