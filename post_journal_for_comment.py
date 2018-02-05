@@ -8,6 +8,7 @@
 import sys
 import os
 import io
+import time
 import re
 import json
 import html
@@ -42,7 +43,8 @@ DEFAULT_CONFIG_JSON = """
     "quote_length": 50,
     "dry_run": false,
     "max_post": 5,
-    "take_timeout_screenshot": false
+    "take_timeout_screenshot": false,
+    "next_post_inhibit_period": 60
 }
 """
 
@@ -207,6 +209,7 @@ for item in post_item_list:
 
 
 item_count = 0
+next_post_wait = 0
 for proxy in proxy_list:
     print("### TRYING PROXY: {0}".format(proxy))
 
@@ -292,7 +295,6 @@ for proxy in proxy_list:
             do_take_screenshot(driver, "journal-posting-{0:03d}-after-input".format(item_count))
 
             print("######### PREVIEWING")
-            #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             scroll_to_and_click(driver, "input#edit-preview-button")
             driver.find_element_by_css_selector("input#edit-preview-button").click()
 
@@ -303,6 +305,10 @@ for proxy in proxy_list:
 
             do_take_screenshot(driver, "journal-posting-{0:03d}-previewing".format(item_count))
 
+            if next_post_wait > 0:
+                print("######### SLEEP FOR NEXT POST: {0} s".format(next_post_wait))
+                time.sleep(next_post_wait)
+
             print("######### POSTING")
             if dry_run:
                 pass
@@ -311,6 +317,7 @@ for proxy in proxy_list:
                 element = WebDriverWait(driver, render_timeout).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, "span.modal_ok"))
                 )
+                next_post_wait = next_post_inhibit_period
 
             do_take_screenshot(driver, "journal-posting-{0:03d}-after-posing".format(item_count))
 
