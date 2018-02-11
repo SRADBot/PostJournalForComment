@@ -14,7 +14,7 @@ import json
 import html
 import requests
 from retry import retry
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone
 import dateutil.parser
 from selenium import webdriver
@@ -39,7 +39,7 @@ DEFAULT_CONFIG_JSON = """
     "snapshot_dir": "",
     "login_temporarily": false,
     "local_time_zone": "Asia/Tokyo",
-    "time_after": "2018-02-01 00:00:00+09:00",
+    "time_after": null,
     "quote_length": 50,
     "dry_run": false,
     "max_post": 5,
@@ -68,7 +68,14 @@ for json_file in sys.argv:
         with open(json_file, "r") as json_io:
             read_config(json_io)
 
-time_after = dateutil.parser.parse(time_after)
+local_time_zone = timezone(local_time_zone)
+now = datetime.now(local_time_zone)
+
+if time_after is None:
+    time_after = now - timedelta(days = 1)
+else:
+    time_after = dateutil.parser.parse(time_after)
+print("# TIME_AFTER: {0}".format(time_after))
 
 if snapshot_dir == "":
     snapshot_dir = os.getcwd()
@@ -174,7 +181,7 @@ target_soup = get_rss_soup("https://srad.jp/~{0}/journal/rss".format(target_id),
 post_item_list = []
 for item in target_soup.find_all("item"):
     utc_time = dateutil.parser.parse(item.find("dc:date").text)
-    local_time = utc_time.astimezone(timezone(local_time_zone))
+    local_time = utc_time.astimezone(local_time_zone)
     if time_after < local_time:
         item_hash = {
             "TITLE": item.find("title").text,
