@@ -39,7 +39,7 @@ DEFAULT_CONFIG_JSON = """
     "snapshot_dir": "",
     "login_temporarily": false,
     "local_time_zone": "Asia/Tokyo",
-    "time_after": null,
+    "time_after": "days=1",
     "quote_length": 50,
     "dry_run": false,
     "max_post": 5,
@@ -71,8 +71,17 @@ for json_file in sys.argv:
 local_time_zone = timezone(local_time_zone)
 now = datetime.now(local_time_zone)
 
-if time_after is None:
-    time_after = now - timedelta(days = 1)
+
+def eval_timedelta(text):
+    for param in re.split(r'\s*,\s*', text):
+        if not re.match(r'^(days|seconds|microseconds|milliseconds|minutes|hours|weeks)\s*=\s*\d+$', param):
+            return None
+    return eval("timedelta({0})".format(text))
+
+
+time_delta = eval_timedelta(time_after)
+if isinstance(time_delta, timedelta):
+    time_after = now - time_delta
 else:
     time_after = dateutil.parser.parse(time_after)
 print("# TIME_AFTER: {0}".format(time_after))
