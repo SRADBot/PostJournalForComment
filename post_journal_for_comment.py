@@ -45,7 +45,8 @@ DEFAULT_CONFIG_JSON = """
     "dry_run": false,
     "max_post": 5,
     "take_timeout_screenshot": false,
-    "next_post_inhibit_period": 60
+    "next_post_inhibit_period": 60,
+    "save_rss": false
 }
 """
 
@@ -223,6 +224,14 @@ for item in target_soup.find_all("item"):
 if len(post_item_list) < 1:
     print("# NO TARGET ITEM; EXIT")
     exit()
+
+
+if save_rss:
+    with open("{0}/{1}-RSS-{2}.xml".format(snapshot_dir, timestamp(), user_id), 'w') as f:
+        f.write(user_soup.prettify())
+    with open("{0}/{1}-RSS-{2}.xml".format(snapshot_dir, timestamp(), target_id), 'w') as f:
+        f.write(target_soup.prettify())
+
 
 if max_post > 0 and len(post_item_list) > max_post:
     print("# LIMIT TARGET ITEMS: {0} -> {1}".format(len(post_item_list), max_post))
