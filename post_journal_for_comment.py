@@ -15,7 +15,7 @@ import html
 import requests
 from retry import retry
 from datetime import datetime, timedelta
-from pytz import timezone
+from pytz import timezone, utc
 import dateutil.parser
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -37,6 +37,7 @@ DEFAULT_CONFIG_JSON = """
     "target_id": "anonymous coward",
     "take_screenshot": false,
     "snapshot_dir": "",
+    "snapshot_retention_period": "days=7",
     "login_temporarily": false,
     "local_time_zone": "Asia/Tokyo",
     "time_after": "days=1",
@@ -69,7 +70,7 @@ for json_file in sys.argv:
             read_config(json_io)
 
 local_time_zone = timezone(local_time_zone)
-now = datetime.now(local_time_zone)
+start_time = datetime.now(local_time_zone)
 
 
 def eval_timedelta(text):
@@ -81,7 +82,7 @@ def eval_timedelta(text):
 
 time_delta = eval_timedelta(time_after)
 if isinstance(time_delta, timedelta):
-    time_after = now - time_delta
+    time_after = start_time - time_delta
 else:
     time_after = dateutil.parser.parse(time_after)
 print("# TIME_AFTER: {0}".format(time_after))
@@ -90,6 +91,23 @@ if snapshot_dir == "":
     snapshot_dir = os.getcwd()
 if not os.path.isdir(snapshot_dir):
     raise RuntimeError("Directory {0} does not esxist.".format(snapshot_dir))
+
+
+snapshot_retention_period = eval_timedelta(snapshot_retention_period)
+snapshot_retention_time = start_time - snapshot_retention_period
+print("# SNAPSHOT RETENTION: DIR: {0}; BEFORE {1}".format(snapshot_dir, snapshot_retention_time))
+for entry in os.scandir(snapshot_dir):
+    if not entry.is_file or not os.access(entry.path, os.W_OK):
+        continue
+    unix_mtime = entry.stat().st_mtime
+    utc_mtime = utc.localize(datetime.utcfromtimestamp(unix_mtime))
+    local_mtime = utc_mtime.astimezone(local_time_zone)
+    if local_mtime >= snapshot_retention_time:
+        continue
+    print("### REMOVE: {0}; {1}  ".format(entry.name, local_mtime))
+    if dry_run:
+        continue
+    os.remove(entry.path)
 
 
 @retry(tries=3, delay=10, backoff=1.5)
