@@ -1,9 +1,14 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3 -u
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2018 Sradbot (sradbot@yahoo.co.jp)
 # Released under the MIT license
 # http://opensource.org/licenses/mit-license.php
+#
+# shebang のオプション -u: 標準出力をバッファリングしない。
+# 標準出力がコンソールでない場合は、バッファリングされるが、
+# 例えば systemd から起動する場合、このために実行完了まで journal に
+# 書き込まれず、途中でハングアップするとログが残らない。
 #
 import sys
 import os
