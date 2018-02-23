@@ -162,7 +162,7 @@ def get_rss_soup(url, proxy_list):
         proxy = proxy_list[0]
         print("### TRYING TO GET {0} VIA PROXY: {1}".format(url, proxy))
         try:
-            rss = requests.get(url, proxies = {"http": proxy, "https": proxy})
+            rss = requests.get(url, proxies = {"http": proxy, "https": proxy}, timeout = page_load_timeout)
             print("##### OK")
             return BeautifulSoup(rss.content, "lxml")
 
