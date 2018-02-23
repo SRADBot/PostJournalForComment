@@ -166,8 +166,8 @@ def get_rss_soup(url, proxy_list):
             print("##### OK")
             return BeautifulSoup(rss.content, "lxml")
 
-        except:
-            print("##### TIMEOUT")
+        except (requests.exceptions.ProxyError, requests.exceptions.Timeout):
+            print("##### PROXY ERROR OR TIMEOUT")
             proxy_list.pop(0)
 
 
