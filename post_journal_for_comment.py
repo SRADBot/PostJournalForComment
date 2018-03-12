@@ -157,17 +157,22 @@ def do_take_screenshot(driver, tag = "TAG"):
         driver.save_screenshot("{0}/{1}-{2}.png".format(snapshot_dir, timestamp(), tag))
 
 
-def get_rss_soup(url, proxy_list):
+def get_rss_soup(user_id, proxy_list):
+    url = "https://srad.jp/~{0}/journal/rss".format(user_id)
     while proxy_list != []:
         proxy = proxy_list[0]
         print("### TRYING TO GET {0} VIA PROXY: {1}".format(url, proxy))
         try:
             rss = requests.get(url, proxies = {"http": proxy, "https": proxy}, timeout = page_load_timeout)
+            if rss.status_code != requests.codes.ok:
+                print("#### ERROR: HTTP STATUS CODE {0} FOR URL {1}".format(rss.status_code, url))
+                rss.raise_for_status()
+                exit(1)  # 冗長?
             print("##### OK")
             return BeautifulSoup(rss.content, "lxml")
 
-        except (requests.exceptions.ConnectionError, requests.exceptions.ProxyError, requests.exceptions.Timeout):
-            print("##### CONNECTION ERROR, PROXY ERROR OR TIMEOUT")
+        except (requests.exceptions.ConnectionError, requests.exceptions.ProxyError, requests.exceptions.Timeout, requests.exceptions.ChunkedEncodingError) as error:
+            print("##### CONTINUE: {0}".format(error))
             proxy_list.pop(0)
 
 
@@ -191,7 +196,7 @@ if len(proxy_list) < 1:
 
 
 print("# USER RSS")
-user_soup = get_rss_soup("https://srad.jp/~{0}/journal/rss".format(user_id), proxy_list)
+user_soup = get_rss_soup(user_id, proxy_list)
 
 REGEX_TEXT_HEADER = re.compile(r"^\s*(?P<TIME>.*?)、{0}は".format(target_id))
 for item in user_soup.find_all("item"):
@@ -209,7 +214,7 @@ print("### TARGET ITEMS AFTER {0} WILL BE REPOSTED".format(time_after))
 
 
 print("# TARGET RSS")
-target_soup = get_rss_soup("https://srad.jp/~{0}/journal/rss".format(target_id), proxy_list)
+target_soup = get_rss_soup(target_id, proxy_list)
 
 post_item_list = []
 for item in target_soup.find_all("item"):
