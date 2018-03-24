@@ -11,7 +11,7 @@ Systemd の timer や cron などから定期実行することを想定して�
 python3 language-pack-ja chromium-browser fonts-ipafont-gothic fonts-ipafont-mincho chromium-chromedriver
 
 #### Pip のパッケージ
-pip3 install lxml beautifulsoup4 selenium retry python-dateutil pytz
+pip3 install lxml beautifulsoup4 selenium retry python-dateutil pytz pid
 
 #### 参考
 ```
@@ -26,7 +26,7 @@ sudo sh -c 'cat > /etc/pip.conf' <<'EOF'
 format = columns
 EOF
 pip3 list -o | awk 'NR>2{print $1}' | sudo -H xargs pip3 install --upgrade
-sudo -H pip3 install lxml beautifulsoup4 selenium retry python-dateutil pytz
+sudo -H pip3 install lxml beautifulsoup4 selenium retry python-dateutil pytz pid
 ```
 
 ### 設定

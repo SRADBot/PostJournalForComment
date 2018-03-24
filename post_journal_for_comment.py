@@ -29,6 +29,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException as SeleniumTimeoutException
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from bs4 import BeautifulSoup
+from pid import PidFile, PidFileError
 
 
 DEFAULT_CONFIG_JSON = """
@@ -43,7 +44,7 @@ DEFAULT_CONFIG_JSON = """
     "take_screenshot": false,
     "snapshot_dir": "",
     "snapshot_retention_period": "days=7",
-    "login_temporarily": false,
+    "lbogin_temporarily": false,
     "local_time_zone": "Asia/Tokyo",
     "time_after": "days=1",
     "quote_length": 50,
@@ -51,7 +52,8 @@ DEFAULT_CONFIG_JSON = """
     "max_post": 5,
     "take_timeout_screenshot": false,
     "next_post_inhibit_period": 60,
-    "save_rss": false
+    "save_rss": false,
+    "pid_dir": ""
 }
 """
 
@@ -77,6 +79,16 @@ for json_file in sys.argv:
 
 local_time_zone = timezone(local_time_zone)
 start_time = datetime.now(local_time_zone)
+if pid_dir == "":
+    pid_dir = snapshot_dir
+
+
+pid_file = PidFile(pidname="post_journal_for_comment.py", piddir=pid_dir)
+try:
+    pid_file.create()
+except PidFileError as error:
+    print("# MULTIPLE EXECUTION; EXIT: {0}".format(error))
+    exit()
 
 
 def eval_timedelta(text):
