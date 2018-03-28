@@ -44,7 +44,7 @@ DEFAULT_CONFIG_JSON = """
     "take_screenshot": false,
     "snapshot_dir": "",
     "snapshot_retention_period": "days=7",
-    "lbogin_temporarily": false,
+    "login_temporarily": false,
     "local_time_zone": "Asia/Tokyo",
     "time_after": "days=1",
     "quote_length": 50,
