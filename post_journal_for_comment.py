@@ -130,7 +130,7 @@ for entry in os.scandir(snapshot_dir):
 
 @retry(tries=3, delay=10, backoff=1.5)
 def http_get(driver, url):
-    driver.get("http://www.cybersyndrome.net/pla6.html")
+    driver.get(url)
 
 
 def get_proxy_list_from_cybersyndrome_net(driver = None, timeout = 60):
